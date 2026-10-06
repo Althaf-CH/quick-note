@@ -1,26 +1,22 @@
-const sqlite3 = require("sqlite3").verbose();
+const fs = require("fs");
+const path = require("path");
 
-const db = new sqlite3.Database("./notes.db", (err) => {
-  if (err) {
-    console.error("Database connection failed:", err.message);
-  } else {
-    console.log("Connected to SQLite database.");
-  }
-});
+const dataFile = path.join(__dirname, "notes.json");
 
-db.run(`
-  CREATE TABLE IF NOT EXISTS notes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`, (err) => {
-  if (err) {
-    console.error("Table creation failed:", err.message);
-  } else {
-    console.log("Notes table is ready.");
-  }
-});
+if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, "[]");
+}
 
-module.exports = db;
+function getNotes() {
+    const data = fs.readFileSync(dataFile, "utf8");
+    return JSON.parse(data);
+}
+
+function saveNotes(notes) {
+    fs.writeFileSync(dataFile, JSON.stringify(notes, null, 2));
+}
+
+module.exports = {
+    getNotes,
+    saveNotes
+};
